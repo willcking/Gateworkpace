@@ -1,0 +1,26 @@
+#eth_abi==2.1.1
+#hdwallet==0.2.0
+click~=8.0.1
+web3==6.11.4
+peewee==3.14.4
+cryptography~=3.4.8
+pycoingecko~=2.2.0
+#solana==0.13.0
+requests~=2.26.0
+mnemonic~=0.20
+ecdsa~=0.17.0
+requests
+#trio
+#trio-websocket
+ujson
+#discord.py
+#pyecharts
+#pytezos==3.3.4
+#brew install  libtool
+#brew install libffi
+#brew install gmp
+#brew install pkg-config
+#brew install automake
+mysqlclient
+
+#telebot
