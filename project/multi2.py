@@ -14,7 +14,8 @@ import random
 
 logger = get_logger('retrive_pairinfo.log')
 main_coin_lst = ['bsc_WBNB', 'bsc_USDT', 'bsc_BUSD',
-                     'eth_USDT', 'eth_WETH', 'eth_WBTC']
+                 'eth_USDT', 'eth_WETH', 'eth_WBTC', 'matic_WMATIC', 'matic_WETH']
+
 error_update_list = []
 
 orm.database.connect()
@@ -27,8 +28,9 @@ main_token_prices = {'busd': 1,
 
 eth_providerlist = read_nodes_from_config()
 bsc_providerlist = CHAIN_PROVIDER['bsc_pool']
+matic_providerlist = CHAIN_PROVIDER['matic_pool']
 
-for symbol in ['wbnb', 'weth', 'wbtc']:
+for symbol in ['wbnb', 'weth', 'wbtc', 'wmatic']:
     coinlist_obj = orm.CoinLists.get_or_none(orm.CoinLists.symbol == symbol.upper()[1:])
     if coinlist_obj is not None:
         main_token_prices[symbol] = coinlist_obj.gate_price or 0
@@ -38,7 +40,7 @@ def get_main_token_price(quote_token_symbol):
     try:
         if quote_token_symbol.lower() in main_token_lst:
             return main_token_prices[quote_token_symbol.lower()]
-        elif quote_token_symbol.upper() in ('USDT', 'BUSD'):
+        elif quote_token_symbol.upper() in ('USDT', 'BUSD', 'USDC'):
             return 1
         else:
             quote_token_obj = orm.Token.get_or_none(
@@ -53,8 +55,6 @@ def get_main_token_price(quote_token_symbol):
         logger.error(f'error get maintoken price {e}')
         return 0
 def update_pair_reserve(pair_obj, network):
-    if pair_obj.pair != '0x8973Be4402bf0a39448f419c2D64bD3591Dd2299':
-       return
     quote_token = pair_obj.token0 if pair_obj.token0 in main_token_contract_list else pair_obj.token1
     base_token = pair_obj.token0 if pair_obj.token1 == quote_token else pair_obj.token1
     logger.info(f"{pair_obj.app} {base_token} / {quote_token}")
@@ -69,28 +69,26 @@ def update_pair_reserve(pair_obj, network):
         logger.error('both not main token')
         return
 
-    if network  == 'eth':
-        provider = random.choice(eth_providerlist)
-    if network == 'bsc':
-        provider = random.choice(bsc_providerlist)
+    provider = random.choice(eval(network+'_providerlist'))
+
 
     logger.info(provider)
     chain = ChainNetworkNew(chain_name=network, provider=provider)
 
     quote_token_obj = orm.Token.get_or_none(
         orm.Token.address == quote_token,
-        orm.Token.network == pair_obj.network
+        #orm.Token.network == pair_obj.network
     )
 
     base_token_obj = orm.Token.get_or_none(
         orm.Token.address == base_token,
-        orm.Token.network == pair_obj.network
+    #   orm.Token.network == pair_obj.network
     )
 
     if (quote_token_obj is None) or (base_token_obj is None):
         return
 
-    if pair_obj.app == 'uniswapv3':
+    if pair_obj.app == 'uniswapv3' and pair_obj.network != 'matic':
         try:
             quote_contract = V3SwapQuote(app_name=pair_obj.app, chain=chain)
 
@@ -151,7 +149,7 @@ def update_pair_reserve(pair_obj, network):
             if pair_obj.id not in error_update_list:
                 error_update_list.append(pair_obj.id)
 
-    elif pair_obj.app in ('uni_swap', 'pancake_swap','sushiswap'):
+    elif pair_obj.app in ('uni_swap', 'pancake_swap','sushiswap', 'quickswapv2'):
         try:
             pair_contract = SwapPairContract(app_name=pair_obj.app, chain=chain, pair_address=pair_obj.pair)
             (token0_balance, token1_balance) = pair_contract.get_reserve_from_pair()
@@ -171,7 +169,7 @@ def update_pair_reserve(pair_obj, network):
             base_coin_price = main_coin_price * Decimal(quote_token_reserve) / 10 ** int(
                 quote_token_obj.decimal) * 10 ** int(base_token_obj.decimal) / base_token_reserve
 
-            logger.info(f"v2 {base_token_obj.symbol},quotereserve {quote_token_reserve} basereserve {base_token_reserve},  {base_coin_price} basetoken:{base_token_obj.address}")
+            logger.info(f"v2 {chain.chain_name} {pair_obj.app} {base_token_obj.symbol},quotereserve {quote_token_reserve} basereserve {base_token_reserve},  {base_coin_price} basetoken:{base_token_obj.address}")
 
             if pair_obj.id in error_update_list:
                 error_update_list.remove(pair_obj.id)
@@ -227,7 +225,8 @@ def update_all_token_reserve(network):
         ((orm.Pair.app == 'uni_swap') & (orm.Pair.network == network)) |
         ((orm.Pair.app == 'uniswapv3') & (orm.Pair.network == network)) |
         ((orm.Pair.app == 'pancake_swap') & (orm.Pair.network == network))|
-        ((orm.Pair.app == 'sushiswap') & (orm.Pair.network == network))
+        ((orm.Pair.app == 'sushiswap') & (orm.Pair.network == network))|
+        ((orm.Pair.app == 'quickswapv2') & (orm.Pair.network == network))
     )
 
     logger.debug(f'total {len(pair_objs)}')
@@ -250,7 +249,7 @@ def check_error_pair():
     orm.database.close()
 
 if __name__ == '__main__':
-    for net in ['bsc', 'eth']:
+    for net in ['matic', 'eth', 'bsc']:
         orm.database.connect()  # 连接数据库
         update_all_token_reserve(net)
         orm.database.close()  # 关闭数据库连接

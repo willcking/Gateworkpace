@@ -6,7 +6,7 @@ from decimal import Decimal
 
 
 from common import orm
-from contracts.erc20 import ERC20Contract
+from contracts.erc20_symbol import ERC20Contract
 from contracts.swap_factory import SwapFactoryContract
 from contracts.swap_pair import SwapPairContract
 from core.chain_network import ChainNetwork
@@ -20,7 +20,8 @@ logger = get_logger('retrive_pairinfo.log')
 def update_maincoin_price():
 
     p = 0
-    main_coin_lst = []
+    main_coin_lst  = ['bsc_WBNB', 'bsc_USDT', 'bsc_BUSD',
+                     'eth_USDT', 'eth_WETH', 'eth_WBTC', 'matic_WMATIC', 'matic_WETH']
 
     for i in main_coin_lst:
         token = i.split('_')[1]
@@ -31,13 +32,16 @@ def update_maincoin_price():
             p = get_gate_price('BTC_USDT')
         if token == 'USDT':
             p = 1
+        if token == 'USDC':
+            p = 1
         if token == 'BUSD':
             p = 1
         if token == 'WETH':
             p = get_gate_price('ETH_USDT')
         if token == 'WBTC':
             p = get_gate_price('BTC_USDT')
-
+        if token == 'WMATIC':
+            p = get_gate_price('MATIC_USDT')
         if p !=  0:
             logger.info(f" update price {i} {p}")
             q = orm.Token.update({
@@ -61,6 +65,8 @@ def format_input(app, chain):
         chain1 = 'eth'
     if chain == 'BSC':
         chain1 = 'bsc'
+    if chain == 'MATIC':
+        chain1 = 'matic'
     return app1, chain1
 
 def store_pair_from_chain():
@@ -68,18 +74,17 @@ def store_pair_from_chain():
     # 获取所有的coin_lists行
     coin_lists_rows = orm.CoinLists.select().where((orm.CoinLists.dex.is_null(False)) & (orm.CoinLists.pair_address.is_null(False))
 )
-    coin_lists_rows = orm.CoinLists.select().where( orm.CoinLists.id ==3
-        )
-
     # 遍历coin_lists行
     for row in coin_lists_rows:
-        l = [row.token_address, row.symbol, row.network, row.dex, row.pair_address, row.gate_price, row.dex_price]
+        l = [row.id, row.token_address, row.symbol, row.network, row.dex, row.pair_address, row.gate_price, row.dex_price]
         logger.info(str(l))
         if row.network + '_' + row.dex  in [
             'ETH_uniswapv2',
             'ETH_uniswapv3',
             'BSC_pancakeswapv2',
             'ETH_sushiswap',
+            'MATIC_quickswapv2',
+            'MATIC_uniswapv3'
         ]:
             logger.info([row.token_address, row.symbol, row.network, row.dex, row.pair_address, row.gate_price, row.dex_price])
 

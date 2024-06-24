@@ -34,7 +34,8 @@ CHAIN_NAME = [
     "ftm",
     'avax',
     'avaxtest',
-    'karastar'
+    'karastar',
+    'base'
 ]
 
 GAS_PRICE = {
@@ -49,6 +50,7 @@ GAS_PRICE = {
     'avaxtest': 27,
     'avax': 27,
     'rinkeby': 3,
+    'base': 1
 }
 
 
@@ -67,7 +69,8 @@ CHAIN_ID = {
     "ftm": 250,
     'avaxtest': 43113,
     'avax': 43114,
-    'karastar': 111
+    'karastar': 111,
+    'base': 8543
 }
 
 NFT_ADDRESS = {
@@ -163,9 +166,15 @@ CONTRACT_ADDRESS = {
             'factory': '0xc35DADB65012eC5796536bD9864eD8773aBc74C4',
             'router': '0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506'
         },
-        'quick_swap': {
+        'quickswapv2': {
             'factory': '0x5757371414417b8c6caad45baef941abc7d3ab32',
             'router': '0xa5e0829caced8ffdd4de3c43696c57f7d7a678ff'
+        },
+        'uniswapv3': {
+            'factory': '0x1F98431c8aD98523631AE4a59f267346ea31F984',
+            'router': '0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD',
+            'quoter': '0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6',
+            'universalrouter': '0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD'
         }
     },
     "bsc": {
@@ -267,6 +276,10 @@ CONTRACT_ADDRESS = {
             'factory': '',
             'router': '0x16327e3fbdaca3bcf7e38f5af2599d2ddc33ae52'
         },
+    },
+    'base': {
+        'bulksender': '',
+
     }
 }
 
@@ -304,7 +317,7 @@ CHAIN_PROVIDER = {
                      "https://data-seed-prebsc-1-s1.binance.org:8545/"],
     #"matic": "https://polygon-rpc.com",
     "matic": "https://polygon-pokt.nodies.app",
-    "matic_pool": ['https://speedy-nodes-nyc.moralis.io/5b49e37f88d29b0a5e49a687/polygon/mainnet',"https://polygon-rpc.com"],
+    "matic_pool": ['https://polygon.llamarpc.com','wss://polygon-bor-rpc.publicnode.com','https://polygon-pokt.nodies.app','https://polygon.blockpi.network/v1/rpc/public','https://api.zan.top/node/v1/polygon/mainnet/public','https://rpc-mainnet.matic.quiknode.pro','https://polygon-bor-rpc.publicnode.com','https://polygon-mainnet.rpcfast.com?api_key=xbhWBI1Wkguk8SNMu1bvvLurPGLXmgwYeC4S6g2H7WdwFigZSmPWVZRxrskEQwIf','https://polygon.meowrpc.com','https://gateway.tenderly.co/public/polygon','https://polygon.gateway.tenderly.co','https://rpc-mainnet.maticvigil.com','https://polygon.rpc.blxrbdn.com','https://polygon.drpc.org','https://rpc.ankr.com/polygon','https://polygon.api.onfinality.io/public','https://endpoints.omniatech.io/v1/matic/mainnet/public','https://polygon-mainnet.public.blastapi.io','https://1rpc.io/matic','https://polygon-rpc.com'],
     "matic_pool1": ['https://polygon-rpc.com/', 'https://rpc-mainnet.maticvigil.com/',
                    'https://rpc-mainnet.matic.quiknode.pro', 'https://matic-mainnet.chainstacklabs.com ',
                    'https://matic-mainnet-archive-rpc.bwarelabs.com'],

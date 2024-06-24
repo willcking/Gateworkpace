@@ -8,15 +8,17 @@ from web3.exceptions import ContractLogicError
 from wconfig import LOG_PATH
 logger = get_logger('chainlist.log')
 
-fpath = os.path.join(LOG_PATH, 'config.json')
+
 # 将节点列表写入配置文件
-def write_nodes_to_config(nodes):
+def write_nodes_to_config(nodes, chanid):
+    fpath = os.path.join(LOG_PATH, str(chanid)+'config.json')
     with open(fpath, 'w') as f:
         json.dump(nodes, f)
 
 # 从配置文件读取节点列表
-def read_nodes_from_config():
+def read_nodes_from_config(chanid):
 
+    fpath = os.path.join(LOG_PATH, str(chanid)+'config.json')
     if not os.path.exists(fpath):
         update_chains(1)
     with open(fpath, 'r') as f:
@@ -29,7 +31,7 @@ def read_nodes_from_config():
 def update_chains(chainid):
 
 
-    burp0_url = f"https://chainlist.org:443/_next/data/RNn2wwJ2-PPJKlUMTPjBO/chain/1.json?chain={chainid}"
+    burp0_url = f"https://chainlist.org/_next/data/oL6-l_PHsTNZz4VY3X57d/chain/{chainid}.json?chain={chainid}"
     burp0_headers = {"Sec-Ch-Ua": "\"Not_A Brand\";v=\"8\", \"Chromium\";v=\"120\", \"Google Chrome\";v=\"120\"",
                      "Purpose": "prefetch", "X-Nextjs-Data": "1", "Sec-Ch-Ua-Mobile": "?0",
                      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -69,7 +71,7 @@ def update_chains(chainid):
 
     #print(rpclst, req.status_code)
     logger.info(str(httprpclst))
-    write_nodes_to_config(httprpclst)
+    write_nodes_to_config(httprpclst, chainid)
 
 if __name__ == '__main__':
 

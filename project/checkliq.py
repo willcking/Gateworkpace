@@ -27,7 +27,7 @@ main_token_prices = {'busd': 1,
                      'usdt': 1,
                      'usdc': 1}
 
-eth_providerlist = read_nodes_from_config()
+eth_providerlist = read_nodes_from_config(1)
 bsc_providerlist = CHAIN_PROVIDER['bsc_pool']
 
 for symbol in ['wbnb', 'weth', 'wbtc']:
