@@ -77,7 +77,8 @@ class Contract:
         #self.logger.info(f"signature: {signature} : selector {selector}")
         return selector
 
-
+    def balance(self):
+        return self.chain.w3.eth.get_balance(self.address)/10**18
 
     def show_address(self):
         self.logger.info(f"contract address {self.address}")

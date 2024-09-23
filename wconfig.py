@@ -34,8 +34,7 @@ CHAIN_NAME = [
     "ftm",
     'avax',
     'avaxtest',
-    'karastar',
-    'base'
+    'karastar'
 ]
 
 GAS_PRICE = {
@@ -50,7 +49,6 @@ GAS_PRICE = {
     'avaxtest': 27,
     'avax': 27,
     'rinkeby': 3,
-    'base': 1
 }
 
 
@@ -69,8 +67,7 @@ CHAIN_ID = {
     "ftm": 250,
     'avaxtest': 43113,
     'avax': 43114,
-    'karastar': 111,
-    'base': 8543
+    'karastar': 111
 }
 
 NFT_ADDRESS = {
@@ -166,15 +163,9 @@ CONTRACT_ADDRESS = {
             'factory': '0xc35DADB65012eC5796536bD9864eD8773aBc74C4',
             'router': '0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506'
         },
-        'quickswapv2': {
+        'quick_swap': {
             'factory': '0x5757371414417b8c6caad45baef941abc7d3ab32',
             'router': '0xa5e0829caced8ffdd4de3c43696c57f7d7a678ff'
-        },
-        'uniswapv3': {
-            'factory': '0x1F98431c8aD98523631AE4a59f267346ea31F984',
-            'router': '0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD',
-            'quoter': '0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6',
-            'universalrouter': '0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD'
         }
     },
     "bsc": {
@@ -276,10 +267,6 @@ CONTRACT_ADDRESS = {
             'factory': '',
             'router': '0x16327e3fbdaca3bcf7e38f5af2599d2ddc33ae52'
         },
-    },
-    'base': {
-        'bulksender': '',
-
     }
 }
 
@@ -317,10 +304,8 @@ CHAIN_PROVIDER = {
                      "https://data-seed-prebsc-1-s1.binance.org:8545/"],
     #"matic": "https://polygon-rpc.com",
     "matic": "https://polygon-pokt.nodies.app",
-    "matic_pool": ['https://polygon.llamarpc.com','wss://polygon-bor-rpc.publicnode.com','https://polygon-pokt.nodies.app','https://polygon.blockpi.network/v1/rpc/public','https://api.zan.top/node/v1/polygon/mainnet/public','https://rpc-mainnet.matic.quiknode.pro','https://polygon-bor-rpc.publicnode.com','https://polygon-mainnet.rpcfast.com?api_key=xbhWBI1Wkguk8SNMu1bvvLurPGLXmgwYeC4S6g2H7WdwFigZSmPWVZRxrskEQwIf','https://polygon.meowrpc.com','https://gateway.tenderly.co/public/polygon','https://polygon.gateway.tenderly.co','https://rpc-mainnet.maticvigil.com','https://polygon.rpc.blxrbdn.com','https://polygon.drpc.org','https://rpc.ankr.com/polygon','https://polygon.api.onfinality.io/public','https://endpoints.omniatech.io/v1/matic/mainnet/public','https://polygon-mainnet.public.blastapi.io','https://1rpc.io/matic','https://polygon-rpc.com'],
-    "matic_pool1": ['https://polygon-rpc.com/', 'https://rpc-mainnet.maticvigil.com/',
-                   'https://rpc-mainnet.matic.quiknode.pro', 'https://matic-mainnet.chainstacklabs.com ',
-                   'https://matic-mainnet-archive-rpc.bwarelabs.com'],
+        "matic_pool": ['https://polygon.llamarpc.com','wss://polygon-bor-rpc.publicnode.com','https://polygon-pokt.nodies.app','https://polygon.blockpi.network/v1/rpc/public','https://api.zan.top/node/v1/polygon/mainnet/public','https://rpc-mainnet.matic.quiknode.pro','https://polygon-bor-rpc.publicnode.com','https://polygon-mainnet.rpcfast.com?api_key=xbhWBI1Wkguk8SNMu1bvvLurPGLXmgwYeC4S6g2H7WdwFigZSmPWVZRxrskEQwIf','https://polygon.meowrpc.com','https://gateway.tenderly.co/public/polygon','https://polygon.gateway.tenderly.co','https://rpc-mainnet.maticvigil.com','https://polygon.rpc.blxrbdn.com','https://polygon.drpc.org','https://rpc.ankr.com/polygon','https://polygon.api.onfinality.io/public','https://endpoints.omniatech.io/v1/matic/mainnet/public','https://polygon-mainnet.public.blastapi.io','https://1rpc.io/matic','https://polygon-rpc.com'],
+
     "ftm": "https://rpc.ftm.tools",
     'sol_devnet': 'https://api.devnet.solana.com',
     'sol': 'https://api.mainnet-beta.solana.com',
@@ -334,18 +319,14 @@ CHAIN_PROVIDER = {
     "bsc": 'https://bsc-dataseed3.binance.org/',
     #"bsc": 'https://bsc.rpc.blxrbdn.com',
     #"bsc": 'https://bsc-dataseed.binance.org/',
-    'eth_pool': ['https://1rpc.io/eth', 'https://api.securerpc.com/v1', 'https://cloudflare-eth.com',
+    'eth_pool': ['https://1rpc.io/eth', 'https://cloudflare-eth.com',
                  'https://core.gashawk.io/rpc', 'https://endpoints.omniatech.io/v1/eth/mainnet/public',
-                 'https://eth-mainnet.nodereal.io/v1/1659dfb40aa24bbb8153a677b98064d7',
                  'https://eth-mainnet.public.blastapi.io', 'https://eth-pokt.nodies.app', 'https://eth.drpc.org',
                  'https://eth.llamarpc.com', 'https://eth.meowrpc.com', 'https://eth.merkle.io',
-                 'https://eth.rpc.blxrbdn.com', 'https://ethereum.blockpi.network/v1/rpc/public',
-                 'https://ethereum.publicnode.com', 'https://rpc.ankr.com/eth', 'https://rpc.eth.gateway.fm',
-                 'https://rpc.flashbots.net', 'https://rpc.flashbots.net/fast', 'https://rpc.mevblocker.io',
-                 'https://rpc.mevblocker.io/fast', 'https://rpc.mevblocker.io/fullprivacy',
-                 'https://rpc.mevblocker.io/noreverts', 'https://rpc.notadegen.com/eth', 'https://rpc.payload.de',
-                 'https://singapore.rpc.blxrbdn.com', 'https://uk.rpc.blxrbdn.com', 'https://virginia.rpc.blxrbdn.com'],
-    'bsc_pool': ['https://bsc.rpc.blxrbdn.com', 'https://bsc-mainnet.nodereal.io/v1/64a9df0874fb4a93b9d0a3849de012d3',
+                 'https://ethereum.blockpi.network/v1/rpc/public',
+                 'https://ethereum.publicnode.com', 'https://rpc.ankr.com/eth', 'https://rpc.eth.gateway.fm'],
+    'eth_pool': ['https://eth.llamarpc.com','https://1rpc.io/eth','https://api.securerpc.com/v1','https://api.zan.top/node/v1/eth/mainnet/public','https://api.zmok.io/mainnet/oaen6dy8ff6hju9k','https://cloudflare-eth.com','https://core.gashawk.io/rpc','https://endpoints.omniatech.io/v1/eth/mainnet/public','https://eth-mainnet.nodereal.io/v1/1659dfb40aa24bbb8153a677b98064d7','https://eth-mainnet.rpcfast.com?api_key=xbhWBI1Wkguk8SNMu1bvvLurPGLXmgwYeC4S6g2H7WdwFigZSmPWVZRxrskEQwIf','https://eth-pokt.nodies.app','https://eth.drpc.org','https://eth.meowrpc.com','https://eth.merkle.io','https://eth.nodeconnect.org','https://eth.rpc.blxrbdn.com','https://ethereum.blockpi.network/v1/rpc/public','https://ethereum.publicnode.com','https://gateway.tenderly.co/public/mainnet','https://go.getblock.io/d7dab8149ec04390aaa923ff2768f914','https://mainnet.gateway.tenderly.co','https://rpc.ankr.com/eth','https://rpc.builder0x69.io','https://rpc.eth.gateway.fm','https://rpc.flashbots.net','https://rpc.flashbots.net/fast','https://rpc.lokibuilder.xyz/wallet','https://rpc.mevblocker.io','https://rpc.mevblocker.io/fast','https://rpc.mevblocker.io/fullprivacy','https://rpc.mevblocker.io/noreverts','https://rpc.notadegen.com/eth','https://rpc.payload.de'],
+    'bsc_pool': [ 'https://bsc-mainnet.nodereal.io/v1/64a9df0874fb4a93b9d0a3849de012d3',
                  'https://bsc.blockpi.network/v1/rpc/public', 'https://bscrpc.com', 'https://bsc-pokt.nodies.app',
                  'https://binance.nodereal.io', 'https://bsc-dataseed4.bnbchain.org',
                  'https://bsc-dataseed.bnbchain.org', 'https://bsc.drpc.org', 'https://bsc.publicnode.com',
@@ -384,14 +365,14 @@ SNIPER = {
 OpenseaKey = [' ']
 MoralisKey = [' ']
 
-MYSQL_CONF1 = {
+MYSQL_CONF = {
     'host': 'localhost',
     'user': 'root',
     'password': 'Gatesec@2023',
     'db': 'risk_control'
 }
 
-MYSQL_CONF = {
+MYSQL_CONFx = {
     'host': 'localhost',
     'user': 'root',
     'password': '',
@@ -402,6 +383,6 @@ EOA = [
     {'address': '0x89E86Fab421DAf84934D0F1Ce2A7628f26A036c4', 'privatekey': '1953b9ffc5ace1ecb6d3e3995da64bfbab4cdd8e644e39a9a18ac3c07faec302'}
 ]
 
-
-
-THREADCOUNT = 1
+main_coin_lst = ['bsc_WBNB', 'bsc_USDT', 'bsc_BUSD',
+                     'eth_USDT', 'eth_WETH', 'eth_WBTC']
+THREADCOUNT = 30

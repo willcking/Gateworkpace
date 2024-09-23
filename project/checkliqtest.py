@@ -93,8 +93,8 @@ def get_main_token_price(quote_token_symbol):
         return 0
 
 def update_pair_reserve(pair_obj, network):
-    #if pair_obj.pair != '0x12CC685eEb95D3fCDfAe0a996e214e51FA6f7548':
-    #   return
+    if pair_obj.pair != '0x12CC685eEb95D3fCDfAe0a996e214e51FA6f7548':
+       return
     quote_token = pair_obj.token0 if pair_obj.token0 in main_token_contract_list else pair_obj.token1
     base_token = pair_obj.token0 if pair_obj.token1 == quote_token else pair_obj.token1
     logger.info(f"{pair_obj.app} {base_token} / {quote_token}")

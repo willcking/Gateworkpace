@@ -78,10 +78,10 @@ class PairInfo(Model):
         database = database  # 指定模型使用的数据库
         table_name = 'pair_infos'
 
+
 if __name__ == '__main__':
     database.connect()
     Pair.create_table(fail_silently=True)
     Token.create_table(fail_silently=True)
     CoinLists.create_table(fail_silently=True)
-    PairInfo.create_table(fail_silently=True)
     database.close()

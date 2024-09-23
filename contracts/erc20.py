@@ -152,3 +152,4 @@ class ERC20Contract(Contract):
         func = erc20_contract.functions.approve(approve_to, 0)
         tx_param = self._build_tx(func, gas=gas)
         return tx_param
+

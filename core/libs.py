@@ -42,8 +42,8 @@ def get_logger(name):
         formatter = logging.Formatter(fmt)
         console.setFormatter(formatter)
         format_str = logging.Formatter(fmt)  # 设置日志格式
-        maxBytes = 40 * 1024 * 1024  # 2M
-        backupCount = 10  # 最多保留10个文件
+        maxBytes = 500 * 1024 * 1024  # 2M
+        backupCount = 2  # 最多保留10个文件
         rotating_file_handler = logging.handlers.RotatingFileHandler(
             filename=fpath,
             maxBytes=maxBytes,

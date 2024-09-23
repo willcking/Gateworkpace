@@ -12,51 +12,7 @@ from web3.exceptions import ContractLogicError
 from common.update_chainlist import read_nodes_from_config
 import random
 
-import fcntl
-import os
-import sys
-import time
-
-
 logger = get_logger('retrive_pairinfo.log')
-
-# 定义锁文件的路径
-lock_file_path = '/tmp/script.lock'
-
-def acquire_lock(lock_file_path, timeout=10):
-    """
-    尝试获取锁，如果在指定时间内没有获取到锁，则放弃。
-    :param lock_file_path: 锁文件的路径
-    :param timeout: 尝试获取锁的超时时间（秒）
-    :return: True if lock acquired, False otherwise.
-    """
-    start_time = time.time()
-    while time.time() - start_time < timeout:
-        try:
-            with open(lock_file_path, 'a') as lock_file:  # 使用追加模式
-                fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                print("Lock acquired.")
-                return True
-        except IOError as e:
-            print("Failed to acquire lock:", e)
-            time.sleep(1)
-    return False
-
-def release_lock(lock_file_path):
-    """
-    释放锁。
-    :param lock_file_path: 锁文件的路径
-    :return: True if lock released, False otherwise.
-    """
-    try:
-        with open(lock_file_path, 'a') as lock_file:  # 使用追加模式
-            fcntl.flock(lock_file, fcntl.LOCK_UN)
-            print("Lock released.")
-            return True
-    except Exception as e:
-        print("Failed to release lock:", e)
-        return False
-
 main_coin_lst = ['bsc_WBNB', 'bsc_USDT', 'bsc_BUSD',
                  'eth_USDT', 'eth_WETH', 'eth_WBTC', 'matic_WMATIC', 'matic_WETH']
 
@@ -126,21 +82,25 @@ def update_pair_reserve(pair_obj, network):
 
     base_token_obj = orm.Token.get_or_none(
         orm.Token.address == base_token,
-    #   orm.Token.network == pair_obj.network
+       # orm.Token.network == pair_obj.network
     )
 
     if (quote_token_obj is None) or (base_token_obj is None):
+        logger.error('error token get')
         return
 
-    if pair_obj.app == 'uniswapv3' and pair_obj.network != 'matic':
-        try:
+    logger.info(f"{pair_obj.app} {quote_token_obj.symbol} {quote_token_obj.decimal}  {base_token_obj.symbol} {base_token_obj.decimal}")
+
+    if pair_obj.app == 'uniswapv3':
+            logger.info(100*'1')
             quote_contract = V3SwapQuote(app_name=pair_obj.app, chain=chain)
+            logger.info(100*'1')
 
             coinlist_obj = orm.CoinLists.get_or_none(
                 orm.CoinLists.token_address == base_token,
                 orm.CoinLists.network == network.upper()
             )
-
+            logger.info(100*'1')
             if coinlist_obj is None:
                 logger.error('error CoinLists record none')
                 return
@@ -168,30 +128,6 @@ def update_pair_reserve(pair_obj, network):
 
             if pair_obj.id in error_update_list:
                 error_update_list.remove(pair_obj.id)
-        except ValueError as e:
-            # 处理 ValueError 异常
-            base_coin_price = 0
-            logger.error(f"Error updating v3 price: {e}")
-            if pair_obj.id in error_update_list:
-                error_update_list.remove(pair_obj.id)
-
-        except ZeroDivisionError as e:
-            # 处理除零异常
-            base_coin_price = 0
-            logger.error(f"Error updating v3 price: {e}")
-            if pair_obj.id in error_update_list:
-                error_update_list.remove(pair_obj.id)
-        except ContractLogicError as e:
-            # 处理除零异常
-            base_coin_price = 0
-            logger.error(f"Error updating v3 price: {e}")
-            if pair_obj.id in error_update_list:
-                error_update_list.remove(pair_obj.id)
-        except Exception as e:
-            logger.error(f"Error updating v3 price: {e}")
-
-            if pair_obj.id not in error_update_list:
-                error_update_list.append(pair_obj.id)
 
     elif pair_obj.app in ('uni_swap', 'pancake_swap','sushiswap', 'quickswapv2'):
         try:
@@ -213,7 +149,7 @@ def update_pair_reserve(pair_obj, network):
             base_coin_price = main_coin_price * Decimal(quote_token_reserve) / 10 ** int(
                 quote_token_obj.decimal) * 10 ** int(base_token_obj.decimal) / base_token_reserve
 
-            logger.info(f"v2 {chain.chain_name} {pair_obj.app} {base_token_obj.symbol},quotereserve {quote_token_reserve} basereserve {base_token_reserve},  {base_coin_price} basetoken:{base_token_obj.address}")
+            logger.info(f"v2 {base_token_obj.symbol},quotereserve {quote_token_reserve} basereserve {base_token_reserve},  {base_coin_price} basetoken:{base_token_obj.address}")
 
             if pair_obj.id in error_update_list:
                 error_update_list.remove(pair_obj.id)
@@ -266,16 +202,15 @@ def update_pair_reserve(pair_obj, network):
 def update_all_token_reserve(network):
     logger.debug('updating reserve...')
     pair_objs = orm.Pair.select().where(
-        ((orm.Pair.app == 'uni_swap') & (orm.Pair.network == network)) |
+     #   ((orm.Pair.app == 'quickswapv2') & (orm.Pair.network == network)) |
         ((orm.Pair.app == 'uniswapv3') & (orm.Pair.network == network)) |
         ((orm.Pair.app == 'pancake_swap') & (orm.Pair.network == network))|
-        ((orm.Pair.app == 'sushiswap') & (orm.Pair.network == network))|
-        ((orm.Pair.app == 'quickswapv2') & (orm.Pair.network == network))
+        ((orm.Pair.app == 'sushiswap') & (orm.Pair.network == network))
     )
 
     logger.debug(f'total {len(pair_objs)}')
 
-    with ThreadPoolExecutor(max_workers=THREADCOUNT) as executor:
+    with ThreadPoolExecutor(max_workers=1) as executor:
         for pair_obj in pair_objs:
             executor.submit(update_pair_reserve, pair_obj, network)
 
@@ -293,23 +228,12 @@ def check_error_pair():
     orm.database.close()
 
 if __name__ == '__main__':
-        # 尝试获取锁
-    if acquire_lock(lock_file_path):
-        try:
-            # 这里是您的主要代码逻辑
-            print("Script is running...")
-            for net in ['matic', 'eth', 'bsc']:
-                orm.database.connect()  # 连接数据库
-                update_all_token_reserve(net)
-                orm.database.close()  # 关闭数据库连接
+    for net in ['matic']:
+        orm.database.connect()  # 连接数据库
+        update_all_token_reserve(net)
+        orm.database.close()  # 关闭数据库连接
 
 
 
-            check_error_pair()
-        finally:
-            # 确保在退出前释放锁
-            release_lock(lock_file_path)
-    else:
-        print("Could not acquire lock, script is already running.")
-
+    check_error_pair()
 

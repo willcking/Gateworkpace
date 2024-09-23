@@ -5,86 +5,36 @@ from common import orm
 from contracts.swap_pair import SwapPairContract
 from core.chain_network import ChainNetworkNew
 from core.libs import get_logger
-from wconfig import  THREADCOUNT,CHAIN_PROVIDER
+from wconfig import  THREADCOUNT
 from datetime import datetime
 from contracts.V3swap_quoter import V3SwapQuote
 from web3.exceptions import ContractLogicError
-from common.update_chainlist import read_nodes_from_config
-import random
-
-import fcntl
-import os
-import sys
-import time
-
-
-logger = get_logger('retrive_pairinfo.log')
-
-# 定义锁文件的路径
-lock_file_path = '/tmp/script.lock'
-
-def acquire_lock(lock_file_path, timeout=10):
-    """
-    尝试获取锁，如果在指定时间内没有获取到锁，则放弃。
-    :param lock_file_path: 锁文件的路径
-    :param timeout: 尝试获取锁的超时时间（秒）
-    :return: True if lock acquired, False otherwise.
-    """
-    start_time = time.time()
-    while time.time() - start_time < timeout:
-        try:
-            with open(lock_file_path, 'a') as lock_file:  # 使用追加模式
-                fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                print("Lock acquired.")
-                return True
-        except IOError as e:
-            print("Failed to acquire lock:", e)
-            time.sleep(1)
-    return False
-
-def release_lock(lock_file_path):
-    """
-    释放锁。
-    :param lock_file_path: 锁文件的路径
-    :return: True if lock released, False otherwise.
-    """
-    try:
-        with open(lock_file_path, 'a') as lock_file:  # 使用追加模式
-            fcntl.flock(lock_file, fcntl.LOCK_UN)
-            print("Lock released.")
-            return True
-    except Exception as e:
-        print("Failed to release lock:", e)
-        return False
-
 main_coin_lst = ['bsc_WBNB', 'bsc_USDT', 'bsc_BUSD',
-                 'eth_USDT', 'eth_WETH', 'eth_WBTC', 'matic_WMATIC', 'matic_WETH']
-
+                     'eth_USDT', 'eth_WETH', 'eth_WBTC']
+logger = get_logger('retrive_pairinfo.log')
 error_update_list = []
 
 orm.database.connect()
+
 main_token_contract_list = {token.address for token in orm.Token.select(orm.Token.address).where(orm.Token.maincoin == 1)}
-main_token_lst = [i.split('_')[1].lower() for i in main_coin_lst]
 
 main_token_prices = {'busd': 1,
                      'usdt': 1,
                      'usdc': 1}
 
-eth_providerlist = read_nodes_from_config()
-bsc_providerlist = CHAIN_PROVIDER['bsc_pool']
-matic_providerlist = CHAIN_PROVIDER['matic_pool']
-
-for symbol in ['wbnb', 'weth', 'wbtc', 'wmatic']:
+for symbol in ['wbnb', 'weth', 'wbtc']:
     coinlist_obj = orm.CoinLists.get_or_none(orm.CoinLists.symbol == symbol.upper()[1:])
     if coinlist_obj is not None:
         main_token_prices[symbol] = coinlist_obj.gate_price or 0
 
 orm.database.close()
+
+
 def get_main_token_price(quote_token_symbol):
     try:
-        if quote_token_symbol.lower() in main_token_lst:
+        if quote_token_symbol.lower() in main_token_prices.keys():
             return main_token_prices[quote_token_symbol.lower()]
-        elif quote_token_symbol.upper() in ('USDT', 'BUSD', 'USDC'):
+        elif quote_token_symbol.upper() in ('USDT', 'BUSD'):
             return 1
         else:
             quote_token_obj = orm.Token.get_or_none(
@@ -98,7 +48,10 @@ def get_main_token_price(quote_token_symbol):
     except Exception as e:
         logger.error(f'error get maintoken price {e}')
         return 0
+
 def update_pair_reserve(pair_obj, network):
+    # if pair_obj.pair != '0x2cb162433E0caBAc4825E6d198a125829156cC92':
+    #    return
     quote_token = pair_obj.token0 if pair_obj.token0 in main_token_contract_list else pair_obj.token1
     base_token = pair_obj.token0 if pair_obj.token1 == quote_token else pair_obj.token1
     logger.info(f"{pair_obj.app} {base_token} / {quote_token}")
@@ -113,26 +66,22 @@ def update_pair_reserve(pair_obj, network):
         logger.error('both not main token')
         return
 
-    provider = random.choice(eval(network+'_providerlist'))
-
-
-    logger.info(provider)
-    chain = ChainNetworkNew(chain_name=network, provider=provider)
+    chain = ChainNetworkNew(network)
 
     quote_token_obj = orm.Token.get_or_none(
         orm.Token.address == quote_token,
-        #orm.Token.network == pair_obj.network
+        orm.Token.network == pair_obj.network
     )
 
     base_token_obj = orm.Token.get_or_none(
         orm.Token.address == base_token,
-    #   orm.Token.network == pair_obj.network
+        orm.Token.network == pair_obj.network
     )
 
     if (quote_token_obj is None) or (base_token_obj is None):
         return
 
-    if pair_obj.app == 'uniswapv3' and pair_obj.network != 'matic':
+    if pair_obj.app == 'uniswapv3':
         try:
             quote_contract = V3SwapQuote(app_name=pair_obj.app, chain=chain)
 
@@ -157,10 +106,8 @@ def update_pair_reserve(pair_obj, network):
             if main_coin_price == 0:
                 return
 
-            base_coin_price = Decimal(main_coin_price) *  Decimal(amount_out) /  10 ** int(quote_token_obj.decimal) /  (Decimal(amount_in) / 10 ** int(base_token_obj.decimal) )
-
-            # base_coin_price = Decimal(amount_out) * 10 ** int(quote_token_obj.decimal) / amount_in / 10 ** int(base_token_obj.decimal) \
-            #         * Decimal(main_coin_price)
+            base_coin_price = Decimal(amount_out) * 10 ** int(quote_token_obj.decimal) / amount_in / 10 ** int(base_token_obj.decimal) \
+                    * Decimal(main_coin_price)
 
             logger.info(
                 f"{pair_obj.app} {base_token_obj.symbol}/{quote_token_obj.symbol} {base_coin_price} basetoken:{base_token_obj.address}"
@@ -193,7 +140,7 @@ def update_pair_reserve(pair_obj, network):
             if pair_obj.id not in error_update_list:
                 error_update_list.append(pair_obj.id)
 
-    elif pair_obj.app in ('uni_swap', 'pancake_swap','sushiswap', 'quickswapv2'):
+    elif pair_obj.app in ('uni_swap', 'pancake_swap','sushiswap'):
         try:
             pair_contract = SwapPairContract(app_name=pair_obj.app, chain=chain, pair_address=pair_obj.pair)
             (token0_balance, token1_balance) = pair_contract.get_reserve_from_pair()
@@ -213,7 +160,7 @@ def update_pair_reserve(pair_obj, network):
             base_coin_price = main_coin_price * Decimal(quote_token_reserve) / 10 ** int(
                 quote_token_obj.decimal) * 10 ** int(base_token_obj.decimal) / base_token_reserve
 
-            logger.info(f"v2 {chain.chain_name} {pair_obj.app} {base_token_obj.symbol},quotereserve {quote_token_reserve} basereserve {base_token_reserve},  {base_coin_price} basetoken:{base_token_obj.address}")
+            logger.info(f"v2 {base_token_obj.symbol},  {base_coin_price} basetoken:{base_token_obj.address}")
 
             if pair_obj.id in error_update_list:
                 error_update_list.remove(pair_obj.id)
@@ -269,8 +216,7 @@ def update_all_token_reserve(network):
         ((orm.Pair.app == 'uni_swap') & (orm.Pair.network == network)) |
         ((orm.Pair.app == 'uniswapv3') & (orm.Pair.network == network)) |
         ((orm.Pair.app == 'pancake_swap') & (orm.Pair.network == network))|
-        ((orm.Pair.app == 'sushiswap') & (orm.Pair.network == network))|
-        ((orm.Pair.app == 'quickswapv2') & (orm.Pair.network == network))
+        ((orm.Pair.app == 'sushiswap') & (orm.Pair.network == network))
     )
 
     logger.debug(f'total {len(pair_objs)}')
@@ -293,23 +239,9 @@ def check_error_pair():
     orm.database.close()
 
 if __name__ == '__main__':
-        # 尝试获取锁
-    if acquire_lock(lock_file_path):
-        try:
-            # 这里是您的主要代码逻辑
-            print("Script is running...")
-            for net in ['matic', 'eth', 'bsc']:
-                orm.database.connect()  # 连接数据库
-                update_all_token_reserve(net)
-                orm.database.close()  # 关闭数据库连接
+    for net in ['bsc', 'eth']:
+        orm.database.connect()  # 连接数据库
+        update_all_token_reserve(net)
+        orm.database.close()  # 关闭数据库连接
 
-
-
-            check_error_pair()
-        finally:
-            # 确保在退出前释放锁
-            release_lock(lock_file_path)
-    else:
-        print("Could not acquire lock, script is already running.")
-
-
+    check_error_pair()

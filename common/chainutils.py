@@ -74,15 +74,18 @@ def store_pair_from_chain():
     # 获取所有的coin_lists行
     coin_lists_rows = orm.CoinLists.select().where((orm.CoinLists.dex.is_null(False)) & (orm.CoinLists.pair_address.is_null(False))
 )
+    # coin_lists_rows = orm.CoinLists.select().where( orm.CoinLists.id ==3
+    #     )
+
     # 遍历coin_lists行
     for row in coin_lists_rows:
         l = [row.id, row.token_address, row.symbol, row.network, row.dex, row.pair_address, row.gate_price, row.dex_price]
         logger.info(str(l))
         if row.network + '_' + row.dex  in [
-            'ETH_uniswapv2',
-            'ETH_uniswapv3',
-            'BSC_pancakeswapv2',
-            'ETH_sushiswap',
+          #  'ETH_uniswapv2',
+          #  'ETH_uniswapv3',
+          #  'BSC_pancakeswapv2',
+          #  'ETH_sushiswap',
             'MATIC_quickswapv2',
             'MATIC_uniswapv3'
         ]:
@@ -91,8 +94,8 @@ def store_pair_from_chain():
             app, chain = format_input(row.dex, row.network)
             try:
                 #address = chain_.w3.to_checksum_address(row.pair_address)
-                if not orm.Pair().get_or_none(orm.Pair.network == chain, orm.Pair.app == app,
-                                       orm.Pair.pair == row.pair_address):
+             #   if not orm.Pair().get_or_none(orm.Pair.network == chain, orm.Pair.app == app,
+             #                          orm.Pair.pair == row.pair_address):
                     chain = ChainNetwork(chain)
                     pair_contract = SwapPairContract(app_name=app, chain=chain, pair_address=row.pair_address)
                     store_pair_info(pair_contract, uid=0)
@@ -188,5 +191,6 @@ if __name__ == '__main__':
     network = 'heco'
     app1 = 'bxh'
     app2 = 'mdex'
+
 
 
